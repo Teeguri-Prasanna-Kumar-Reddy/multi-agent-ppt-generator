@@ -1,8 +1,7 @@
 import os
 import shutil
-from typing import List, Optional
 
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, Form, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -28,10 +27,19 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # Generate PPT Endpoint
 # -----------------------------
 @app.post("/generate-ppt")
-async def generate_ppt(
-    topic: str = Form(...),
-    files: Optional[List[UploadFile]] = File(None),
-):
+async def generate_ppt(request: Request, topic: str = Form(...)):
+    form = await request.form()
+
+    # Manually pull out only real uploaded files, ignoring any empty/stray
+    # entries a client (e.g. the Swagger UI) may send for an unused
+    # file field. This avoids 422s that have nothing to do with your
+    # actual request.
+    files = [
+        value
+        for key, value in form.multi_items()
+        if key == "files" and isinstance(value, UploadFile) and value.filename
+    ]
+
     saved_files = []
 
     if files:
