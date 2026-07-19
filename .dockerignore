@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.detaignore
+.git
+.github
+output/
+uploads/
+node_modules/
+*.log

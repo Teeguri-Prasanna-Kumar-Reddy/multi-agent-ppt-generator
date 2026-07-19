@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GenAI PPT Agent</title>
+<style>
+:root {
+    color-scheme: light;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+    color: #0f172a;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+.card {
+    width: min(100%, 520px);
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.24);
+}
+.badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+h1 { margin: 0 0 10px; font-size: 1.7rem; }
+p { margin: 0 0 20px; color: #475569; line-height: 1.5; }
+label { display: block; font-weight: 600; margin-top: 12px; margin-bottom: 8px; }
+input[type="text"], input[type="file"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 1rem;
+}
+button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+button:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
+button:disabled { opacity: 0.7; cursor: wait; }
+#status {
+    margin-top: 18px;
+    min-height: 24px;
+    font-weight: 600;
+    color: #1e293b;
+}
+#download { margin-top: 12px; }
+#download a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+</style>
+</head>
+<body>
+<div class="card">
+    <span class="badge">Upgraded with Groq support</span>
+    <h1>GenAI PPT Generator</h1>
+    <p>Create polished presentation decks from a topic and supporting documents in seconds.</p>
+
+    <label for="topic">Topic</label>
+    <input type="text" id="topic" placeholder="Enter a presentation topic" />
+
+    <label for="files">Upload documents (optional)</label>
+    <input type="file" id="files" multiple />
+
+    <button id="generateBtn" onclick="generatePPT()">Generate PPT</button>
+
+    <div id="status">Ready to generate.</div>
+    <div id="download"></div>
+</div>
+
+<script>
+async function generatePPT() {
+    const topic = document.getElementById("topic").value.trim();
+    const files = document.getElementById("files").files;
+    const statusEl = document.getElementById("status");
+    const downloadEl = document.getElementById("download");
+    const buttonEl = document.getElementById("generateBtn");
+
+    if (!topic) {
+        alert("Please enter a topic before generating your deck.");
+        return;
+    }
+
+    statusEl.textContent = "Generating your presentation...";
+    downloadEl.innerHTML = "";
+    buttonEl.disabled = true;
+
+    const formData = new FormData();
+    formData.append("topic", topic);
+
+    for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+    }
+
+    try {
+        const response = await fetch("http://localhost:8000/generate-ppt", {
+            method: "POST",
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+            throw new Error(data.message || "The backend could not generate the PPT.");
+        }
+
+        statusEl.textContent = "PPT generated successfully ✅";
+        downloadEl.innerHTML = `<a href="http://localhost:8000${data.download_url}" target="_blank">Download PPT</a>`;
+    } catch (error) {
+        console.error(error);
+        statusEl.textContent = error.message || "Error generating PPT ❌";
+    } finally {
+        buttonEl.disabled = false;
+    }
+}
+</script>
+</body>
+</html>
