@@ -264,5 +264,3 @@ LinkedIn: [https://linkedin.com/in/teeguri-prasanna-kumar-reddy](https://linkedi
 
 ## ⭐ If you like this project, give it a star!
 
-
->>>>>>> bcede9b922143e29a6a4d2bb4575db39e2205e33
